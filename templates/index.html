@@ -118,6 +118,28 @@ h2 {
   cursor: not-allowed; 
 }
 
+.music-btn {
+  position: fixed;
+  top: 20px;       /* Keeps it at the exact same height as the other button */
+  left: 20px;      /* FIXED: Moves it from the right side over to the left side */
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid #d2e4d8;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--maroon, #5a2e2e);
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.music-btn:hover {
+  background: #fff;
+  transform: scale(1.05);
+}
+
+
 /* ---------- Screen 3 ---------- */ 
 .vibe-sub{ font-size: 13.5px; color: var(--text-soft); margin: 0 0 20px; } 
 food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; } 
@@ -147,6 +169,7 @@ food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margi
 .modal-close{ margin-top: 14px; width: 100%; background: var(--purple); color: white; padding: 10px; } 
 .modal-empty{ font-size: 13px; color: var(--text-soft); } 
 @media (max-width: 420px){ .stage{ width: 90vw; } .card{ padding: 28px 22px; } } 
+
 </style>
 
 </head>
@@ -225,8 +248,55 @@ food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margi
 </div>
 
 <div class="footer-tag">made with ♥</div>
+<!-- The audio element (hidden, loops continuously) -->
+<audio id="bgMusic" src="/static/backgroundmusic.mp3" loop></audio>
+
+
+<!-- Recommended: A simple toggle button for users to control it -->
+<button id="musicToggle" class="music-btn">🎵</button>
+
 
 <script>
+
+  // 1. BACKGROUND MUSIC LOGIC
+  const music = document.getElementById('bgMusic');
+const toggleBtn = document.getElementById('musicToggle');
+
+if (music && toggleBtn) {
+  music.volume = 0.4; // Soft background volume
+
+  // Core function to kick off the audio smoothly
+  function autoPlayMusic() {
+    music.play().then(() => {
+      toggleBtn.textContent = "⏸️";
+      
+      // Clean up listeners immediately so it only executes once
+      window.removeEventListener('click', autoPlayMusic);
+      window.removeEventListener('touchstart', autoPlayMusic);
+      window.removeEventListener('mousemove', autoPlayMusic);
+    }).catch((err) => {
+      console.log("Autoplay context waiting for initial interaction...", err);
+    });
+  }
+
+  // Triggers playback on ANY initial movement, click, or tap on the page
+  window.addEventListener('click', autoPlayMusic);
+  window.addEventListener('touchstart', autoPlayMusic);
+  window.addEventListener('mousemove', autoPlayMusic);
+
+  // Manual fallback toggle button controls
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Stops conflicts with the window listeners
+    if (music.paused) {
+      music.play();
+      toggleBtn.textContent = "⏸️";
+    } else {
+      music.pause();
+      toggleBtn.textContent = "🎵";
+    }
+  });
+}
+
   // ---------- background sparkles ----------
   const sparkleEmojis = ['✨','🌸','💗'];
   for(let i=0;i<6;i++){
