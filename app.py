@@ -4,8 +4,11 @@ from datetime import datetime
 import pymysql
 import pymysql.cursors
 from flask import Flask, jsonify, render_template, request
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
+
+ist_tz = ZoneInfo("Asia/Kolkata")
 
 # Parse port safely since cloud databases like Aiven use custom port integers
 DB_PORT = int(os.environ.get("DB_PORT", 3306))
@@ -69,7 +72,7 @@ def save_response():
         "day": data.get("day"),
         "time_slot": data.get("time"),
         "food": data.get("food"),
-        "saved_at": datetime.utcnow(),
+        "saved_at": datetime.now(ist_tz),
     }
 
     conn = get_connection()

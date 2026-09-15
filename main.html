@@ -512,79 +512,83 @@
     spawnHearts();
   });
 
-  // ---------- database (persistent storage) ----------
-  const saveStatus = document.getElementById('saveStatus');
+// ---------- database (persistent storage) ---------- 
+const saveStatus = document.getElementById('saveStatus'); 
 
-  async function saveResponse(){
-    const record = {
-      response: 'yes',
-      day: dateInput.value || null,
-      time: timeInput.value || null,
-      food: chosenFood || null,
-      savedAt: new Date().toISOString()
-    };
-    const key = 'response:' + Date.now();
-    try{
-      saveStatus.textContent = 'saving...';
-      const result = await window.storage.set(key, JSON.stringify(record), true);
-      if(result){
-        saveStatus.textContent = 'saved ✓';
-      } else {
-        saveStatus.textContent = "couldn't save, but no worries — it's still a date!";
-      }
-    } catch(err){
-      console.error('Storage error:', err);
-      saveStatus.textContent = "couldn't save, but no worries — it's still a date!";
-    }
-  }
+async function saveResponse(){ 
+  const record = { 
+    response: 'yes', 
+    day: dateInput.value || null, 
+    time: timeInput.value || null, 
+    food: chosenFood || null, 
+    savedAt: new Date().toISOString() 
+  }; 
+  const key = 'response:' + Date.now(); 
+  try{ 
+    saveStatus.textContent = 'saving...'; 
+    const result = await window.storage.set(key, JSON.stringify(record), true); 
+    if(result){ 
+      saveStatus.textContent = 'saved ✓'; 
+    } else { 
+      saveStatus.textContent = "couldn't save, but no worries — it's still a date!"; 
+    } 
+  } catch(err){ 
+    console.error('Storage error:', err); 
+    saveStatus.textContent = "couldn't save, but no worries — it's still a date!"; 
+  } 
+} 
 
-  async function loadResponses(){
-    const listEl = document.getElementById('responsesList');
-    listEl.innerHTML = '<p class="modal-empty">loading...</p>';
-    try{
-      const keysResult = await window.storage.list('response:', true);
-      const keys = (keysResult && keysResult.keys) ? keysResult.keys : [];
-      if(keys.length === 0){
-        listEl.innerHTML = '<p class="modal-empty">no responses yet.</p>';
-        return;
-      }
-      const records = [];
-      for(const k of keys){
-        try{
-          const r = await window.storage.get(k, true);
-          if(r && r.value) records.push(JSON.parse(r.value));
-        } catch(e){ /* skip missing/broken key */ }
-      }
-      records.sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||''));
-      if(records.length === 0){
-        listEl.innerHTML = '<p class="modal-empty">no responses yet.</p>';
-        return;
-      }
-      listEl.innerHTML = records.map(r=>{
-        const when = r.savedAt ? new Date(r.savedAt).toLocaleString() : 'unknown time';
-        return `<div class="response-row">
-          <div><strong>${r.response === 'yes' ? '💕 said yes' : r.response}</strong></div>
-          <div>Day: ${r.day || '—'} · Time: ${r.time || '—'}</div>
-          <div>Food: ${r.food || '—'}</div>
-          <div class="meta">${when}</div>
-        </div>`;
-      }).join('');
-    } catch(err){
-      console.error('Storage error:', err);
-      listEl.innerHTML = '<p class="modal-empty">couldn\'t load responses right now.</p>';
-    }
-  }
+async function loadResponses(){ 
+  const listEl = document.getElementById('responsesList'); 
+  listEl.innerHTML = '<p class="modal-empty">loading...</p>'; 
+  try{ 
+    const keysResult = await window.storage.list('response:', true); 
+    const keys = (keysResult && keysResult.keys) ? keysResult.keys : []; 
+    if(keys.length === 0){ 
+      listEl.innerHTML = '<p class="modal-empty">no responses yet.</p>'; 
+      return; 
+    } 
+    const records = []; 
+    for(const k of keys){ 
+      try{ 
+        const r = await window.storage.get(k, true); 
+        if(r && r.value) records.push(JSON.parse(r.value)); 
+      } catch(e){ /* skip missing/broken key */ } 
+    } 
+    records.sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||'')); 
+    if(records.length === 0){ 
+      listEl.innerHTML = '<p class="modal-empty">no responses yet.</p>'; 
+      return; 
+    } 
+    listEl.innerHTML = records.map(r=>{ 
+      // Updated line below to explicitly format into Indian Standard Time (IST)
+      const when = r.savedAt ? new Date(r.savedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'unknown time'; 
+      return `<div class="response-row"> 
+        <div><strong>${r.response === 'yes' ? '💕 said yes' : r.response}</strong></div> 
+        <div>Day: ${r.day || '—'} · Time: ${r.time || '—'}</div> 
+        <div>Food: ${r.food || '—'}</div> 
+        <div class="meta">${when}</div> 
+      </div>`; 
+    }).join(''); 
+  } catch(err){ 
+    console.error('Storage error:', err); 
+    listEl.innerHTML = '<p class="modal-empty">couldn\'t load responses right now.</p>'; 
+  } 
+} 
 
-  document.getElementById('viewResponsesBtn').addEventListener('click', ()=>{
-    document.getElementById('modalOverlay').classList.add('open');
-    loadResponses();
-  });
-  document.getElementById('modalCloseBtn').addEventListener('click', ()=>{
-    document.getElementById('modalOverlay').classList.remove('open');
-  });
-  document.getElementById('modalOverlay').addEventListener('click', (e)=>{
-    if(e.target.id === 'modalOverlay') e.target.classList.remove('open');
-  });
+document.getElementById('viewResponsesBtn').addEventListener('click', ()=>{ 
+  document.getElementById('modalOverlay').classList.add('open'); 
+  loadResponses(); 
+}); 
+
+document.getElementById('modalCloseBtn').addEventListener('click', ()=>{ 
+  document.getElementById('modalOverlay').classList.remove('open'); 
+}); 
+
+document.getElementById('modalOverlay').addEventListener('click', (e)=>{ 
+  if(e.target.id === 'modalOverlay') e.target.classList.remove('open'); 
+});
+
 
   // ---------- Screen 4: floating hearts + accept ----------
   function spawnHearts(){
