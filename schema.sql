@@ -15,6 +15,3 @@ CREATE TABLE IF NOT EXISTS responses (
     saved_at DATETIME NOT NULL
 );
 
-show tables;
-select * from responses;
-TRUNCATE table responses;
