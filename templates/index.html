@@ -39,15 +39,85 @@ button:active{ transform: scale(0.96); }
 .no-btn:hover{ background: var(--purple-dark); } 
 .no-btn.roaming{ position: fixed; transition: left 0.18s ease, top 0.18s ease, transform 0.15s ease; } 
 /* ---------- Screen 2 ---------- */ 
-.icon-row{ font-size: 30px; margin-bottom: 6px; } 
-h2{ font-size: 22px; color: var(--maroon); margin: 4px 0 24px; line-height: 1.35; } 
-.field{ text-align:left; margin-bottom: 16px; } 
-.field label{ display:block; font-size: 14px; color: var(--text-soft); margin-bottom: 6px; font-weight: 600; } 
-.field input, .field select{ width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #d2e4d8; background: #fffdfc; font-family: inherit; font-size: 14px; color: var(--maroon); outline: none; } 
-.field input:focus, .field select:focus{ border-color: var(--hot-pink); } 
-.primary-btn{ width: 100%; background: linear-gradient(120deg, var(--hot-pink), var(--hot-pink-dark)); color: white; padding: 13px; font-size: 15px; margin-top: 6px; box-shadow: 0 10px 22px rgba(90, 158, 112, 0.35); } 
-.primary-btn:hover{ filter: brightness(1.05); } 
-.primary-btn:disabled{ opacity: 0.5; cursor: not-allowed; } 
+.icon-row { 
+  font-size: 30px; 
+  margin-bottom: 6px; 
+} 
+
+h2 { 
+  font-size: 22px; 
+  color: var(--maroon); 
+  margin: 4px 0 24px; 
+  line-height: 1.35; 
+} 
+
+.field { 
+  text-align: left; 
+  margin-bottom: 16px; 
+} 
+
+.field label { 
+  display: block; 
+  font-size: 14px; 
+  color: var(--text-soft); 
+  margin-bottom: 6px; 
+  font-weight: 600; 
+} 
+
+/* FIXED: Merged styles with box-sizing and explicit heights to match perfectly */
+.field input, .field select { 
+  width: 100%; 
+  box-sizing: border-box; /* Fixes unexpected sizing issues caused by padding */
+  height: 44px;           /* Forces both inputs to be the exact same height */
+  padding: 11px 14px; 
+  border-radius: 10px; 
+  border: 1.5px solid #d2e4d8; 
+  background: #fffdfc; 
+  font-family: inherit; 
+  font-size: 14px; 
+  color: var(--maroon); 
+  outline: none; 
+  appearance: none;       /* Cleans up mobile-specific default sizing quirks */
+  -webkit-appearance: none; 
+} 
+
+/* OPTIONAL: Adds a subtle dropdown arrow style for your time selector since appearance: none removes it */
+.field select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='%23d2e4d8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.field input:focus, .field select:focus { 
+  border-color: var(--hot-pink); 
+} 
+
+.primary-btn { 
+  width: 100%; 
+  box-sizing: border-box;
+  background: linear-gradient(120deg, var(--hot-pink), var(--hot-pink-dark)); 
+  color: white; 
+  padding: 13px; 
+  font-size: 15px; 
+  margin-top: 6px; 
+  border-radius: 10px; /* Added to match the rounded input style */
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(90, 158, 112, 0.35); 
+} 
+
+.primary-btn:hover { 
+  filter: brightness(1.05); 
+} 
+
+.primary-btn:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
+
 /* ---------- Screen 3 ---------- */ 
 .vibe-sub{ font-size: 13.5px; color: var(--text-soft); margin: 0 0 20px; } 
 food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; } 
