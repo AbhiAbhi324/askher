@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>will you call today?</title>
-<style> 
-:root { 
+<style>
+:root {
   --pink-bg: #d8ecd0;           /* Soft sage/mint background */
   --pink-bg-2: #eaf5e6;         /* Pale mint highlight background */
   --card-bg: #fcfdfb;           /* Warm off-white card background */
@@ -16,162 +16,338 @@
   --maroon: #224d34;            /* Dark deep emerald for high-contrast text */
   --text-soft: #557563;         /* Soft muted olive/sage for labels */
   --shadow: 0 20px 50px rgba(70, 140, 95, 0.15); /* Tinted green shadow */
-} 
-*{ box-sizing: border-box; } 
-html, body{ margin:0; padding:0; height:100%; font-family: Georgia, 'Times New Roman', serif; background: radial-gradient(circle at 30% 20%, var(--pink-bg-2), var(--pink-bg) 70%); overflow: hidden; } 
-body{ display:flex; align-items:center; justify-content:center; position: relative; } 
-/* floating background sparkles */ 
-.bg-sparkle{ position:absolute; font-size: 14px; opacity: 0.5; animation: drift 6s ease-in-out infinite; pointer-events:none; user-select:none; } 
-@keyframes drift{ 0%,100%{ transform: translateY(0px); } 50%{ transform: translateY(-14px); } } 
-.stage{ position:relative; width: 380px; min-height: 320px; } 
-.card{ background: var(--card-bg); border-radius: 22px; box-shadow: var(--shadow); padding: 36px 32px; text-align:center; position:absolute; top:0; left:0; right:0; opacity:0; transform: scale(0.94); pointer-events:none; transition: opacity 0.35s ease, transform 0.35s ease; } 
-.card.active{ position:relative; opacity:1; transform: scale(1); pointer-events:auto; } 
-/* ---------- Screen 1 ---------- */ 
-.photo-wrap{ width: 92px; height: 92px; margin: 0 auto 18px; border-radius: 18px; overflow:hidden; background: linear-gradient(145deg, #c3d6c7, #e2ebd5); display:flex; align-items:center; justify-content:center; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); } 
-.photo-wrap svg{ width: 62px; height: 62px; } 
-h1.ask{ font-size: 21px; color: var(--maroon); margin: 0 0 26px; line-height: 1.4; font-weight: 700; } 
-.btn-row{ display:flex; justify-content:center; gap: 14px; position:relative; height: 46px; } 
-button{ font-family: inherit; border: none; cursor:pointer; border-radius: 999px; font-size: 15px; padding: 11px 26px; font-weight: 600; transition: transform 0.15s ease, box-shadow 0.15s ease; } 
-button:active{ transform: scale(0.96); } 
-.yes-btn{ background: var(--hot-pink); color: white; box-shadow: 0 8px 18px rgba(90, 158, 112, 0.4); } 
-.yes-btn:hover{ background: var(--hot-pink-dark); } 
-.no-btn{ background: var(--purple); color: white; position: relative; box-shadow: 0 8px 18px rgba(140, 184, 163, 0.4); } 
-.no-btn:hover{ background: var(--purple-dark); } 
-.no-btn.roaming{ position: fixed; transition: left 0.18s ease, top 0.18s ease, transform 0.15s ease; } 
-/* ---------- Screen 2 ---------- */ 
-.icon-row { 
-  font-size: 30px; 
-  margin-bottom: 6px; 
-} 
+}
 
-h2 { 
-  font-size: 22px; 
-  color: var(--maroon); 
-  margin: 4px 0 24px; 
-  line-height: 1.35; 
-} 
+*{ box-sizing: border-box; }
 
-.field { 
-  text-align: left; 
-  margin-bottom: 16px; 
-} 
+html, body{
+  margin:0;
+  padding:0;
+  height:100%;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: radial-gradient(circle at 30% 20%, var(--pink-bg-2), var(--pink-bg) 70%);
+  overflow: hidden;
+}
 
-.field label { 
-  display: block; 
-  font-size: 14px; 
-  color: var(--text-soft); 
-  margin-bottom: 6px; 
-  font-weight: 600; 
-} 
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position: relative;
+}
 
-/* FIXED: Merged styles with box-sizing and explicit heights to match perfectly */
-.field input, .field select { 
-  width: 100%; 
-  box-sizing: border-box; /* Fixes unexpected sizing issues caused by padding */
-  height: 44px;           /* Forces both inputs to be the exact same height */
-  padding: 11px 14px; 
-  border-radius: 10px; 
-  border: 1.5px solid #d2e4d8; 
-  background: #fffdfc; 
-  font-family: inherit; 
-  font-size: 14px; 
-  color: var(--maroon); 
-  outline: none; 
-  appearance: none;       /* Cleans up mobile-specific default sizing quirks */
-  -webkit-appearance: none; 
-} 
+/* floating background sparkles */
+.bg-sparkle{
+  position:absolute;
+  font-size: 14px;
+  opacity: 0.5;
+  animation: drift 6s ease-in-out infinite;
+  pointer-events:none;
+  user-select:none;
+}
+@keyframes drift{
+  0%,100%{ transform: translateY(0px); }
+  50%{ transform: translateY(-14px); }
+}
 
-/* OPTIONAL: Adds a subtle dropdown arrow style for your time selector since appearance: none removes it */
-.field select {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='%23d2e4d8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+.stage{
+  position:relative;
+  width: 380px;
+  min-height: 320px;
+}
+
+.card{
+  background: var(--card-bg);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  padding: 36px 32px;
+  text-align:center;
+  position:absolute;
+  top:0; left:0; right:0;
+  opacity:0;
+  transform: scale(0.94);
+  pointer-events:none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.card.active{
+  position:relative;
+  opacity:1;
+  transform: scale(1);
+  pointer-events:auto;
+}
+
+/* ---------- Top Right Actions Column ---------- */
+.top-actions-column {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+}
+
+/* ---------- Screen 1 ---------- */
+.photo-wrap{
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  border-radius: 18px;
+  overflow:hidden;
+  background: linear-gradient(145deg, #c3d6c7, #e2ebd5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+.photo-wrap svg{ width: 62px; height: 62px; }
+
+h1.ask{
+  font-size: 21px;
+  color: var(--maroon);
+  margin: 0 0 26px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.btn-row{
+  display:flex;
+  justify-content:center;
+  gap: 14px;
+  position:relative;
+  height: 46px;
+}
+
+button{
+  font-family: inherit;
+  border: none;
+  cursor:pointer;
+  border-radius: 999px;
+  font-size: 15px;
+  padding: 11px 26px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+button:active{ transform: scale(0.96); }
+
+.yes-btn{
+  background: var(--hot-pink);
+  color: white;
+  box-shadow: 0 8px 18px rgba(90, 158, 112, 0.4);
+}
+.yes-btn:hover{ background: var(--hot-pink-dark); }
+
+.no-btn{
+  background: var(--purple);
+  color: white;
+  position: relative;
+  box-shadow: 0 8px 18px rgba(140, 184, 163, 0.4);
+}
+.no-btn:hover{ background: var(--purple-dark); }
+.no-btn.roaming{
+  position: fixed;
+  transition: left 0.18s ease, top 0.18s ease, transform 0.15s ease;
+}
+
+/* ---------- Screen 2 ---------- */
+.icon-row{
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+
+h2{
+  font-size: 22px;
+  color: var(--maroon);
+  margin: 4px 0 24px;
+  line-height: 1.35;
+}
+
+.field{
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.field label{
+  display: block;
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.field input, .field select{
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #d2e4d8;
+  background: #fffdfc;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--maroon);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.field select{
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d2e4d8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 14px center;
   background-size: 16px;
   padding-right: 40px;
 }
 
-.field input:focus, .field select:focus { 
-  border-color: var(--hot-pink); 
-} 
+.field input:focus, .field select:focus{
+  border-color: var(--hot-pink);
+}
 
-.primary-btn { 
-  width: 100%; 
+.primary-btn{
+  width: 100%;
   box-sizing: border-box;
-  background: linear-gradient(120deg, var(--hot-pink), var(--hot-pink-dark)); 
-  color: white; 
-  padding: 13px; 
-  font-size: 15px; 
-  margin-top: 6px; 
-  border-radius: 10px; /* Added to match the rounded input style */
+  background: linear-gradient(120deg, var(--hot-pink), var(--hot-pink-dark));
+  color: white;
+  padding: 13px;
+  font-size: 15px;
+  margin-top: 6px;
+  border-radius: 10px;
   border: none;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 22px rgba(90, 158, 112, 0.35); 
-} 
-
-.primary-btn:hover { 
-  filter: brightness(1.05); 
-} 
-
-.primary-btn:disabled { 
-  opacity: 0.5; 
-  cursor: not-allowed; 
+  box-shadow: 0 10px 22px rgba(90, 158, 112, 0.35);
+}
+.primary-btn:hover{ filter: brightness(1.05); }
+.primary-btn:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.music-btn {
-  position: fixed;
-  top: 20px;       /* Keeps it at the exact same height as the other button */
-  left: 20px;      /* FIXED: Moves it from the right side over to the left side */
-  background: rgba(255, 255, 255, 0.85);
-  border: 1.5px solid #d2e4d8;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  color: var(--maroon, #5a2e2e);
+/* ---------- Top-right action buttons (view responses / music) ---------- */
+.view-responses-link,
+.music-btn{
+  font-size: 11px;
+  font-family: sans-serif;
+  color: #557563;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(210, 228, 216, 0.6);
+  padding: 6px 14px;
+  border-radius: 999px;
   cursor: pointer;
-  z-index: 10000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
   transition: all 0.2s ease;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(70, 140, 95, 0.06);
+  outline: none;
+  width: 125px;
 }
 
-.music-btn:hover {
-  background: #fff;
-  transform: scale(1.05);
+.view-responses-link:hover,
+.music-btn:hover{
+  color: var(--hot-pink-dark);
+  background: #ffffff;
+  border-color: var(--pink-bg);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(70, 140, 95, 0.12);
 }
 
+.view-responses-link:active,
+.music-btn:active{
+  transform: translateY(0);
+}
 
-/* ---------- Screen 3 ---------- */ 
-.vibe-sub{ font-size: 13.5px; color: var(--text-soft); margin: 0 0 20px; } 
-food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; } 
-.food-card{ border: 1.5px solid #dce8df; border-radius: 14px; padding: 14px 6px; background: #fffdfc; cursor:pointer; transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease; user-select:none; } 
-.food-card:hover{ transform: translateY(-2px); } 
-.food-card .emoji{ font-size: 26px; display:block; margin-bottom: 6px; } 
-.food-card .label{ font-size: 12.5px; color: var(--maroon); font-weight:600; } 
-.food-card.selected{ border-color: var(--hot-pink); background: #eef7f1; } 
-/* ---------- Screen 4 ---------- */ 
-.final-msg{ font-size: 19px; color: var(--maroon); font-weight: 700; line-height: 1.5; margin: 0 0 14px; } 
-.ps{ font-size: 12.5px; color: var(--text-soft); font-style: italic; margin-bottom: 18px; line-height: 1.5; } 
-.heart-row{ font-size: 15px; margin-bottom: 20px; letter-spacing: 4px; color: var(--hot-pink); } 
-.accept-btn{ width: 100%; background: linear-gradient(120deg, var(--hot-pink-dark), var(--hot-pink)); color: white; padding: 14px; font-size: 15px; box-shadow: 0 10px 24px rgba(59, 117, 79, 0.4); } 
-.floating-heart{ position: fixed; bottom: -40px; font-size: 18px; color: var(--hot-pink); animation: floatUp 4.5s linear forwards; pointer-events:none; opacity: 0.85; } 
-@keyframes floatUp{ to{ transform: translateY(-100vh) translateX(var(--drift, 0px)); opacity: 0; } } 
-.footer-tag{ position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #9bbfa8; font-family: sans-serif; } 
-.view-responses-link{ position: fixed; top: 14px; right: 16px; font-size: 11px; font-family: sans-serif; color: #9bbfa8; background: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 999px; cursor: pointer; border: none; z-index: 5; } 
-.view-responses-link:hover{ color: var(--hot-pink-dark); } 
-.save-status{ font-size: 11px; font-family: sans-serif; color: var(--text-soft); margin-top: 10px; min-height: 14px; } 
-.modal-overlay{ position: fixed; inset: 0; background: rgba(20,45,30,0.35); display:none; align-items:center; justify-content:center; z-index: 20; } 
-.modal-overlay.open{ display:flex; } 
-.modal-box{ background: var(--card-bg); border-radius: 18px; padding: 24px; width: min(420px, 88vw); max-height: 70vh; overflow-y: auto; box-shadow: var(--shadow); font-family: sans-serif; } 
-.modal-box h3{ margin: 0 0 14px; color: var(--maroon); font-family: Georgia, serif; } 
-.response-row{ border-bottom: 1px solid #e2eee5; padding: 10px 0; font-size: 13px; color: var(--maroon); } 
-.response-row div{ margin-bottom: 2px; } 
-.response-row .meta{ color: var(--text-soft); font-size: 11.5px; } 
-.modal-close{ margin-top: 14px; width: 100%; background: var(--purple); color: white; padding: 10px; } 
-.modal-empty{ font-size: 13px; color: var(--text-soft); } 
-@media (max-width: 420px){ .stage{ width: 90vw; } .card{ padding: 28px 22px; } } 
+/* ---------- Screen 3 ---------- */
+.vibe-sub{ font-size: 13.5px; color: var(--text-soft); margin: 0 0 20px; }
+.food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+.food-card{
+  border: 1.5px solid #dce8df;
+  border-radius: 14px;
+  padding: 14px 6px;
+  background: #fffdfc;
+  cursor:pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  user-select:none;
+}
+.food-card:hover{ transform: translateY(-2px); }
+.food-card .emoji{ font-size: 26px; display:block; margin-bottom: 6px; }
+.food-card .label{ font-size: 12.5px; color: var(--maroon); font-weight:600; }
+.food-card.selected{ border-color: var(--hot-pink); background: #eef7f1; }
 
+/* ---------- Screen 4 ---------- */
+.final-msg{ font-size: 19px; color: var(--maroon); font-weight: 700; line-height: 1.5; margin: 0 0 14px; }
+.ps{ font-size: 12.5px; color: var(--text-soft); font-style: italic; margin-bottom: 18px; line-height: 1.5; }
+.heart-row{ font-size: 15px; margin-bottom: 20px; letter-spacing: 4px; color: var(--hot-pink); }
+.accept-btn{
+  width: 100%;
+  background: linear-gradient(120deg, var(--hot-pink-dark), var(--hot-pink));
+  color: white;
+  padding: 14px;
+  font-size: 15px;
+  box-shadow: 0 10px 24px rgba(59, 117, 79, 0.4);
+}
+.floating-heart{
+  position: fixed;
+  bottom: -40px;
+  font-size: 18px;
+  color: var(--hot-pink);
+  animation: floatUp 4.5s linear forwards;
+  pointer-events:none;
+  opacity: 0.85;
+}
+@keyframes floatUp{
+  to{ transform: translateY(-100vh) translateX(var(--drift, 0px)); opacity: 0; }
+}
+
+.footer-tag{
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #9bbfa8;
+  font-family: sans-serif;
+}
+
+.save-status{
+  font-size: 11px;
+  font-family: sans-serif;
+  color: var(--text-soft);
+  margin-top: 10px;
+  min-height: 14px;
+}
+
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(20,45,30,0.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index: 20;
+}
+.modal-overlay.open{ display:flex; }
+.modal-box{
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 24px;
+  width: min(420px, 88vw);
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  font-family: sans-serif;
+}
+.modal-box h3{ margin: 0 0 14px; color: var(--maroon); font-family: Georgia, serif; }
+.response-row{ border-bottom: 1px solid #e2eee5; padding: 10px 0; font-size: 13px; color: var(--maroon); }
+.response-row div{ margin-bottom: 2px; }
+.response-row .meta{ color: var(--text-soft); font-size: 11.5px; }
+.modal-close{ margin-top: 14px; width: 100%; background: var(--purple); color: white; padding: 10px; }
+.modal-empty{ font-size: 13px; color: var(--text-soft); }
+
+@media (max-width: 420px){
+  .stage{ width: 90vw; }
+  .card{ padding: 28px 22px; }
+}
 </style>
-
 </head>
 <body>
 
@@ -219,7 +395,7 @@ food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margi
       <div class="food-card" data-food="Happy"><span class="emoji">😊</span><span class="label">Happy</span></div>
       <div class="food-card" data-food="Sad"><span class="emoji">🥺</span><span class="label">Sad</span></div>
       <div class="food-card" data-food="Excited"><span class="emoji">🤩</span><span class="label">Excited</span></div>
-      <div class="food-card" data-food="Tired"><span class="emoji"> 😴 </span><span class="label">Tired</span></div>
+      <div class="food-card" data-food="Tired"><span class="emoji">😴</span><span class="label">Tired</span></div>
       <div class="food-card" data-food="Angry"><span class="emoji">😤</span><span class="label">Angry</span></div>
       <div class="food-card" data-food="Anxious"><span class="emoji">😰</span><span class="label">Anxious</span></div>
     </div>
@@ -237,7 +413,15 @@ food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margi
 
 </div>
 
-<button class="view-responses-link" id="viewResponsesBtn">📋 view responses</button>
+<!-- Background music: put song.mp3 in your static/ folder -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="{{ url_for('static', filename='backgroundmusic.mp3') }}" type="audio/mpeg">
+</audio>
+
+<div class="top-actions-column">
+  <button id="musicToggle" class="music-btn">🎵 Play Music</button>
+  <button class="view-responses-link" id="viewResponsesBtn">📋 view responses</button>
+</div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
@@ -248,54 +432,8 @@ food-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margi
 </div>
 
 <div class="footer-tag">made with ♥</div>
-<!-- The audio element (hidden, loops continuously) -->
-<audio id="bgMusic" src="/static/backgroundmusic.mp3" loop></audio>
-
-
-<!-- Recommended: A simple toggle button for users to control it -->
-<button id="musicToggle" class="music-btn">🎵</button>
-
 
 <script>
-
-  // 1. BACKGROUND MUSIC LOGIC
-  const music = document.getElementById('bgMusic');
-const toggleBtn = document.getElementById('musicToggle');
-
-if (music && toggleBtn) {
-  music.volume = 0.4; // Soft background volume
-
-  // Core function to kick off the audio smoothly
-  function autoPlayMusic() {
-    music.play().then(() => {
-      toggleBtn.textContent = "⏸️";
-      
-      // Clean up listeners immediately so it only executes once
-      window.removeEventListener('click', autoPlayMusic);
-      window.removeEventListener('touchstart', autoPlayMusic);
-      window.removeEventListener('mousemove', autoPlayMusic);
-    }).catch((err) => {
-      console.log("Autoplay context waiting for initial interaction...", err);
-    });
-  }
-
-  // Triggers playback on ANY initial movement, click, or tap on the page
-  window.addEventListener('click', autoPlayMusic);
-  window.addEventListener('touchstart', autoPlayMusic);
-  window.addEventListener('mousemove', autoPlayMusic);
-
-  // Manual fallback toggle button controls
-  toggleBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Stops conflicts with the window listeners
-    if (music.paused) {
-      music.play();
-      toggleBtn.textContent = "⏸️";
-    } else {
-      music.pause();
-      toggleBtn.textContent = "🎵";
-    }
-  });
-}
 
   // ---------- background sparkles ----------
   const sparkleEmojis = ['✨','🌸','💗'];
@@ -313,6 +451,42 @@ if (music && toggleBtn) {
   function goTo(id){
     document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- background music ----------
+  const music = document.getElementById('bgMusic');
+  const toggleBtn = document.getElementById('musicToggle');
+
+  if (music && toggleBtn) {
+    music.volume = 0.4; // Soft background volume
+
+    function autoPlayMusic(){
+      music.play().then(() => {
+        toggleBtn.textContent = "⏸️ Pause Music";
+        window.removeEventListener('click', autoPlayMusic);
+        window.removeEventListener('touchstart', autoPlayMusic);
+        window.removeEventListener('mousemove', autoPlayMusic);
+      }).catch((err) => {
+        console.log("Autoplay waiting for user interaction...", err);
+      });
+    }
+
+    // Start playback on the first click, tap, or mouse movement
+    window.addEventListener('click', autoPlayMusic);
+    window.addEventListener('touchstart', autoPlayMusic);
+    window.addEventListener('mousemove', autoPlayMusic);
+
+    // Manual toggle button
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (music.paused) {
+        music.play();
+        toggleBtn.textContent = "⏸️ Pause Music";
+      } else {
+        music.pause();
+        toggleBtn.textContent = "🎵 Play Music";
+      }
+    });
   }
 
   // ---------- Screen 1: runaway "no" button ----------
@@ -363,7 +537,7 @@ if (music && toggleBtn) {
     goTo('screen3');
   });
 
-  // ---------- Screen 3: food vibe ----------
+  // ---------- Screen 3: mood vibe ----------
   const foodCards = document.querySelectorAll('.food-card');
   const confirmFoodBtn = document.getElementById('confirmFoodBtn');
   let chosenFood = null;
@@ -378,7 +552,7 @@ if (music && toggleBtn) {
   });
 
   confirmFoodBtn.addEventListener('click', ()=>{
-    finalMsg.textContent = `glad you didn't say no. be ready by ${chosenTime} 😁,eeeeeee`;
+    finalMsg.textContent = `glad you shared that you're feeling ${chosenFood.toLowerCase()}. talk soon, around ${chosenTime} 🌸😁`;
     goTo('screen4');
     spawnHearts();
   });
@@ -404,11 +578,11 @@ if (music && toggleBtn) {
       if(res.ok && data.ok){
         saveStatus.textContent = 'saved ✓';
       } else {
-        saveStatus.textContent = "couldn't save, but no worries — it's still a date!";
+        saveStatus.textContent = "couldn't save, but no worries — got it either way!";
       }
     } catch(err){
       console.error('Save error:', err);
-      saveStatus.textContent = "couldn't save, but no worries — it's still a date!";
+      saveStatus.textContent = "couldn't save, but no worries — got it either way!";
     }
   }
 
@@ -448,7 +622,6 @@ if (music && toggleBtn) {
   document.getElementById('modalOverlay').addEventListener('click', (e)=>{
     if(e.target.id === 'modalOverlay') e.target.classList.remove('open');
   });
-
 
   // ---------- Screen 4: floating hearts + accept ----------
   function spawnHearts(){
