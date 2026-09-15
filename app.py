@@ -7,12 +7,15 @@ from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
+# Parse port safely since cloud databases like Aiven use custom port integers
+DB_PORT = int(os.environ.get("DB_PORT", 3306))
 
 DB_CONFIG = {
     "host": os.environ.get("DB_HOST", "localhost"),
     "user": os.environ.get("DB_USER", "root"),
     "password": os.environ.get("DB_PASSWORD", "root"),
     "database": os.environ.get("DB_NAME", "date_proposal"),
+    "port": DB_PORT,
     "cursorclass": pymysql.cursors.DictCursor,
     "autocommit": True,
 }
@@ -42,6 +45,14 @@ def init_db():
             )
     finally:
         conn.close()
+
+
+# Automatically initialize the database on startup when run by Gunicorn
+try:
+    init_db()
+    print("Database successfully initialized or already exists.")
+except Exception as e:
+    print(f"Database initialization warning (App will try running anyway): {e}")
 
 
 @app.route("/")
@@ -100,5 +111,4 @@ def list_responses():
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True, host="0.0.0.0", port=5000)
