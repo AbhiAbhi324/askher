@@ -15,3 +15,6 @@ CREATE TABLE IF NOT EXISTS responses (
     saved_at DATETIME NOT NULL
 );
 
+USE defaultdb;
+SELECT * from responses;
+truncate table responses;
