@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>will you call today?</title>
+<style>
+  :root{
+    --pink-bg: #f9d7e0;
+    --pink-bg-2: #fbe4ea;
+    --card-bg: #fdf9f8;
+    --hot-pink: #e8558d;
+    --hot-pink-dark: #d43f78;
+    --purple: #b48ce0;
+    --purple-dark: #9a6fd1;
+    --maroon: #7a2340;
+    --text-soft: #8a5a68;
+    --shadow: 0 20px 50px rgba(180, 70, 110, 0.18);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: radial-gradient(circle at 30% 20%, var(--pink-bg-2), var(--pink-bg) 70%);
+    overflow: hidden;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position: relative;
+  }
+
+  /* floating background sparkles */
+  .bg-sparkle{
+    position:absolute;
+    font-size: 14px;
+    opacity: 0.5;
+    animation: drift 6s ease-in-out infinite;
+    pointer-events:none;
+    user-select:none;
+  }
+  @keyframes drift{
+    0%,100%{ transform: translateY(0px); }
+    50%{ transform: translateY(-14px); }
+  }
+
+  .stage{
+    position:relative;
+    width: 380px;
+    min-height: 320px;
+  }
+
+  .card{
+    background: var(--card-bg);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: 36px 32px;
+    text-align:center;
+    position:absolute;
+    top:0; left:0; right:0;
+    opacity:0;
+    transform: scale(0.94);
+    pointer-events:none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .card.active{
+    position:relative;
+    opacity:1;
+    transform: scale(1);
+    pointer-events:auto;
+  }
+
+  /* ---------- Screen 1 ---------- */
+  .photo-wrap{
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    overflow:hidden;
+    background: linear-gradient(145deg, #d9c7ce, #efe0e4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+  }
+  .photo-wrap svg{ width: 62px; height: 62px; }
+
+  h1.ask{
+    font-size: 21px;
+    color: var(--maroon);
+    margin: 0 0 26px;
+    line-height: 1.4;
+    font-weight: 700;
+  }
+
+  .btn-row{
+    display:flex;
+    justify-content:center;
+    gap: 14px;
+    position:relative;
+    height: 46px;
+  }
+
+  button{
+    font-family: inherit;
+    border: none;
+    cursor:pointer;
+    border-radius: 999px;
+    font-size: 15px;
+    padding: 11px 26px;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button:active{ transform: scale(0.96); }
+
+  .yes-btn{
+    background: var(--hot-pink);
+    color: white;
+    box-shadow: 0 8px 18px rgba(232, 85, 141, 0.4);
+  }
+  .yes-btn:hover{ background: var(--hot-pink-dark); }
+
+  .no-btn{
+    background: var(--purple);
+    color: white;
+    position: relative;
+    box-shadow: 0 8px 18px rgba(180, 140, 224, 0.4);
+  }
+  .no-btn:hover{ background: var(--purple-dark); }
+
+  .no-btn.roaming{
+    position: fixed;
+    transition: left 0.18s ease, top 0.18s ease, transform 0.15s ease;
+  }
+
+  /* ---------- Screen 2 ---------- */
+  .icon-row{
+    font-size: 30px;
+    margin-bottom: 6px;
+  }
+  h2{
+    font-size: 22px;
+    color: var(--maroon);
+    margin: 4px 0 24px;
+    line-height: 1.35;
+  }
+  .field{
+    text-align:left;
+    margin-bottom: 16px;
+  }
+  .field label{
+    display:block;
+    font-size: 14px;
+    color: var(--text-soft);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .field input, .field select{
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #f0d9e0;
+    background: #fffdfc;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--maroon);
+    outline: none;
+  }
+  .field input:focus, .field select:focus{
+    border-color: var(--hot-pink);
+  }
+  .primary-btn{
+    width: 100%;
+    background: linear-gradient(120deg, var(--hot-pink), var(--hot-pink-dark));
+    color: white;
+    padding: 13px;
+    font-size: 15px;
+    margin-top: 6px;
+    box-shadow: 0 10px 22px rgba(232, 85, 141, 0.35);
+  }
+  .primary-btn:hover{ filter: brightness(1.05); }
+  .primary-btn:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ---------- Screen 3 ---------- */
+  .vibe-sub{
+    font-size: 13.5px;
+    color: var(--text-soft);
+    margin: 0 0 20px;
+  }
+  .food-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .food-card{
+    border: 1.5px solid #f0dde3;
+    border-radius: 14px;
+    padding: 14px 6px;
+    background: #fffdfc;
+    cursor:pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    user-select:none;
+  }
+  .food-card:hover{ transform: translateY(-2px); }
+  .food-card .emoji{ font-size: 26px; display:block; margin-bottom: 6px; }
+  .food-card .label{ font-size: 12.5px; color: var(--maroon); font-weight:600; }
+  .food-card.selected{
+    border-color: var(--hot-pink);
+    background: #fdeef3;
+  }
+
+  /* ---------- Screen 4 ---------- */
+  .final-msg{
+    font-size: 19px;
+    color: var(--maroon);
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 0 0 14px;
+  }
+  .ps{
+    font-size: 12.5px;
+    color: var(--text-soft);
+    font-style: italic;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .heart-row{
+    font-size: 15px;
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+    color: var(--hot-pink);
+  }
+  .accept-btn{
+    width: 100%;
+    background: linear-gradient(120deg, var(--hot-pink-dark), var(--hot-pink));
+    color: white;
+    padding: 14px;
+    font-size: 15px;
+    box-shadow: 0 10px 24px rgba(212, 63, 120, 0.4);
+  }
+
+  .floating-heart{
+    position: fixed;
+    bottom: -40px;
+    font-size: 18px;
+    color: var(--hot-pink);
+    animation: floatUp 4.5s linear forwards;
+    pointer-events:none;
+    opacity: 0.85;
+  }
+  @keyframes floatUp{
+    to{ transform: translateY(-100vh) translateX(var(--drift, 0px)); opacity: 0; }
+  }
+
+  .footer-tag{
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #c99aab;
+    font-family: sans-serif;
+  }
+
+  .view-responses-link{
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    font-size: 11px;
+    font-family: sans-serif;
+    color: #c99aab;
+    background: rgba(255,255,255,0.6);
+    padding: 5px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: none;
+    z-index: 5;
+  }
+  .view-responses-link:hover{ color: var(--hot-pink-dark); }
+
+  .save-status{
+    font-size: 11px;
+    font-family: sans-serif;
+    color: var(--text-soft);
+    margin-top: 10px;
+    min-height: 14px;
+  }
+
+  .modal-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(60,20,35,0.35);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index: 20;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background: var(--card-bg);
+    border-radius: 18px;
+    padding: 24px;
+    width: min(420px, 88vw);
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    font-family: sans-serif;
+  }
+  .modal-box h3{
+    margin: 0 0 14px;
+    color: var(--maroon);
+    font-family: Georgia, serif;
+  }
+  .response-row{
+    border-bottom: 1px solid #f3dee5;
+    padding: 10px 0;
+    font-size: 13px;
+    color: var(--maroon);
+  }
+  .response-row div{ margin-bottom: 2px; }
+  .response-row .meta{ color: var(--text-soft); font-size: 11.5px; }
+  .modal-close{
+    margin-top: 14px;
+    width: 100%;
+    background: var(--purple);
+    color: white;
+    padding: 10px;
+  }
+  .modal-empty{
+    font-size: 13px;
+    color: var(--text-soft);
+  }
+
+  @media (max-width: 420px){
+    .stage{ width: 90vw; }
+    .card{ padding: 28px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- Screen 1: The Ask -->
+  <div class="card active" id="screen1">
+    <div class="photo-wrap">
+      <img src="{{ url_for('static', filename='mee.jpg') }}" alt="us" style="width:100%; height:100%; object-fit:cover;">
+    </div>
+    <h1 class="ask">🌸 Will you call me ? 🌸</h1>
+    <div class="btn-row">
+      <button class="yes-btn" id="yesBtn1">YES ♥</button>
+      <button class="no-btn" id="noBtn">no 🥺</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Scheduling -->
+  <div class="card" id="screen2">
+    <div class="icon-row">💌🐾</div>
+    <h2>So... when are you free?</h2>
+    <div class="field">
+      <label>Pick a Day 📅</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div class="field">
+      <label>What Time? 🕰️</label>
+      <select id="timeInput">
+        <option value="" disabled selected>Select a time...</option>
+        <option>Morning (9 – 11am)</option>
+        <option>Lunch (12 – 2pm)</option>
+        <option>Afternoon (3 – 5pm)</option>
+        <option>Evening (6 – 8pm)</option>
+        <option>Late night (9pm+)</option>
+      </select>
+    </div>
+    <button class="primary-btn" id="setDateBtn">set the date! ♥</button>
+  </div>
+
+  <!-- Screen 3: Vibe picker -->
+  <div class="card" id="screen3">
+    <h2 style="margin-bottom:2px;">How are you feeling today? ✨</h2>
+    <p class="vibe-sub">pick your vibe</p>
+    <div class="food-grid" id="foodGrid">
+      <div class="food-card" data-food="Happy"><span class="emoji">😊</span><span class="label">Happy</span></div>
+      <div class="food-card" data-food="Sad"><span class="emoji">🥺</span><span class="label">Sad</span></div>
+      <div class="food-card" data-food="Excited"><span class="emoji">🤩</span><span class="label">Excited</span></div>
+      <div class="food-card" data-food="Tired"><span class="emoji"> 😴 </span><span class="label">Tired</span></div>
+      <div class="food-card" data-food="Angry"><span class="emoji">😤</span><span class="label">Angry</span></div>
+      <div class="food-card" data-food="Anxious"><span class="emoji">😰</span><span class="label">Anxious</span></div>
+    </div>
+    <button class="primary-btn" id="confirmFoodBtn" disabled>lock it in ♥</button>
+  </div>
+
+  <!-- Screen 4: Final -->
+  <div class="card" id="screen4">
+    <p class="final-msg" id="finalMsg">glad you shared how you feel. be kind to yourself today 🌸😁</p>
+    <p class="ps">Thanks for sharing during your busy day! Have a wonderful day ahead! ✨</p>
+    <div class="heart-row">♥ ♥ ♥ ♥ ♥</div>
+    <button class="accept-btn" id="acceptBtn">ok I accept 🥰</button>
+    <div class="save-status" id="saveStatus"></div>
+  </div>
+
+</div>
+
+<button class="view-responses-link" id="viewResponsesBtn">📋 view responses</button>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <h3>saved responses</h3>
+    <div id="responsesList"><p class="modal-empty">loading...</p></div>
+    <button class="modal-close" id="modalCloseBtn">close</button>
+  </div>
+</div>
+
+<div class="footer-tag">made with ♥</div>
+
+<script>
+  // ---------- background sparkles ----------
+  const sparkleEmojis = ['✨','🌸','💗'];
+  for(let i=0;i<6;i++){
+    const s = document.createElement('div');
+    s.className = 'bg-sparkle';
+    s.textContent = sparkleEmojis[i % sparkleEmojis.length];
+    s.style.left = Math.random()*90+'vw';
+    s.style.top = Math.random()*90+'vh';
+    s.style.animationDelay = (Math.random()*3)+'s';
+    document.body.appendChild(s);
+  }
+
+  const stage = document.getElementById('stage');
+  function goTo(id){
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ---------- Screen 1: runaway "no" button ----------
+  const noBtn = document.getElementById('noBtn');
+  const yesBtn1 = document.getElementById('yesBtn1');
+  let noIsFixed = false;
+
+  function dodge(){
+    const btnW = noBtn.offsetWidth;
+    const btnH = noBtn.offsetHeight;
+    const margin = 20;
+    const maxX = window.innerWidth - btnW - margin;
+    const maxY = window.innerHeight - btnH - margin;
+    const x = Math.random() * (maxX - margin) + margin;
+    const y = Math.random() * (maxY - margin) + margin;
+    if(!noIsFixed){
+      noBtn.classList.add('roaming');
+      noIsFixed = true;
+    }
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+  }
+
+  noBtn.addEventListener('mouseenter', dodge);
+  noBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    dodge();
+  });
+  noBtn.addEventListener('touchstart', (e)=>{
+    e.preventDefault();
+    dodge();
+  }, {passive:false});
+
+  yesBtn1.addEventListener('click', ()=> goTo('screen2'));
+
+  // ---------- Screen 2: scheduling ----------
+  const dateInput = document.getElementById('dateInput');
+  const timeInput = document.getElementById('timeInput');
+  const setDateBtn = document.getElementById('setDateBtn');
+  const finalMsg = document.getElementById('finalMsg');
+  let chosenTime = '10';
+
+  setDateBtn.addEventListener('click', ()=>{
+    if(timeInput.value){
+      const match = timeInput.value.match(/(\d+)/);
+      if(match) chosenTime = match[1];
+    }
+    goTo('screen3');
+  });
+
+  // ---------- Screen 3: food vibe ----------
+  const foodCards = document.querySelectorAll('.food-card');
+  const confirmFoodBtn = document.getElementById('confirmFoodBtn');
+  let chosenFood = null;
+
+  foodCards.forEach(card=>{
+    card.addEventListener('click', ()=>{
+      foodCards.forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      chosenFood = card.dataset.food;
+      confirmFoodBtn.disabled = false;
+    });
+  });
+
+  confirmFoodBtn.addEventListener('click', ()=>{
+    finalMsg.textContent = `glad you didn't say no. be ready by ${chosenTime} 😁,eeeeeee`;
+    goTo('screen4');
+    spawnHearts();
+  });
+
+  // ---------- database (Flask + MySQL API) ----------
+  const saveStatus = document.getElementById('saveStatus');
+
+  async function saveResponse(){
+    const record = {
+      response: 'yes',
+      day: dateInput.value || null,
+      time: timeInput.value || null,
+      food: chosenFood || null
+    };
+    try{
+      saveStatus.textContent = 'saving...';
+      const res = await fetch('/api/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record)
+      });
+      const data = await res.json();
+      if(res.ok && data.ok){
+        saveStatus.textContent = 'saved ✓';
+      } else {
+        saveStatus.textContent = "couldn't save, but no worries — it's still a date!";
+      }
+    } catch(err){
+      console.error('Save error:', err);
+      saveStatus.textContent = "couldn't save, but no worries — it's still a date!";
+    }
+  }
+
+  async function loadResponses(){
+    const listEl = document.getElementById('responsesList');
+    listEl.innerHTML = '<p class="modal-empty">loading...</p>';
+    try{
+      const res = await fetch('/api/responses');
+      const data = await res.json();
+      const records = (data && data.ok && data.responses) ? data.responses : [];
+      if(records.length === 0){
+        listEl.innerHTML = '<p class="modal-empty">no responses yet.</p>';
+        return;
+      }
+      listEl.innerHTML = records.map(r=>{
+        const when = r.saved_at ? new Date(r.saved_at).toLocaleString() : 'unknown time';
+        return `<div class="response-row">
+          <div><strong>${r.response === 'yes' ? '💕 said yes' : r.response}</strong></div>
+          <div>Day: ${r.day || '—'} · Time: ${r.time_slot || '—'}</div>
+          <div>Mood: ${r.food || '—'}</div>
+          <div class="meta">${when}</div>
+        </div>`;
+      }).join('');
+    } catch(err){
+      console.error('Load error:', err);
+      listEl.innerHTML = '<p class="modal-empty">couldn\'t load responses right now.</p>';
+    }
+  }
+
+  document.getElementById('viewResponsesBtn').addEventListener('click', ()=>{
+    document.getElementById('modalOverlay').classList.add('open');
+    loadResponses();
+  });
+  document.getElementById('modalCloseBtn').addEventListener('click', ()=>{
+    document.getElementById('modalOverlay').classList.remove('open');
+  });
+  document.getElementById('modalOverlay').addEventListener('click', (e)=>{
+    if(e.target.id === 'modalOverlay') e.target.classList.remove('open');
+  });
+
+
+  // ---------- Screen 4: floating hearts + accept ----------
+  function spawnHearts(){
+    const interval = setInterval(()=>{
+      const h = document.createElement('div');
+      h.className = 'floating-heart';
+      h.textContent = ['♥','💕','💗','💖'][Math.floor(Math.random()*4)];
+      h.style.left = Math.random()*100 + 'vw';
+      h.style.setProperty('--drift', (Math.random()*80-40)+'px');
+      h.style.fontSize = (14 + Math.random()*14) + 'px';
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(), 4600);
+    }, 350);
+    setTimeout(()=>clearInterval(interval), 6000);
+  }
+
+  document.getElementById('acceptBtn').addEventListener('click', ()=>{
+    document.getElementById('acceptBtn').textContent = "got it, thank you! 🧸";
+    document.getElementById('acceptBtn').disabled = true;
+    spawnHearts();
+    saveResponse();
+  });
+</script>
+
+</body>
+</html>
