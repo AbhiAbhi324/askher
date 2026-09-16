@@ -1,5 +1,6 @@
 import os
 import smtplib
+import threading
 from datetime import datetime
 from email.message import EmailMessage
 
@@ -11,6 +12,8 @@ from zoneinfo import ZoneInfo
 app = Flask(__name__)
 
 ist_tz = ZoneInfo("Asia/Kolkata")
+
+
 DB_PORT = int(os.environ.get("DB_PORT", 3306))
 
 DB_CONFIG = {
@@ -23,6 +26,7 @@ DB_CONFIG = {
     "autocommit": True,
 }
 
+
 MAIL_CONFIG = {
     "server": os.environ.get("MAIL_SERVER", "smtp.gmail.com"),
     "port": int(os.environ.get("MAIL_PORT", "465")),
@@ -30,7 +34,6 @@ MAIL_CONFIG = {
     "password": os.environ.get("MAIL_PASSWORD", "xlfo yeac qclc hppv"),
 }
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "abhiabhi4a@gmail.com")
-
 
 
 def get_connection():
@@ -57,6 +60,7 @@ def init_db():
             )
     finally:
         conn.close()
+
 
 try:
     init_db()
@@ -89,9 +93,11 @@ def send_notification_email(record):
     msg.set_content(body)
 
     try:
-        with smtplib.SMTP_SSL(MAIL_CONFIG["server"], MAIL_CONFIG["port"]) as smtp:
+
+        with smtplib.SMTP_SSL(MAIL_CONFIG["server"], MAIL_CONFIG["port"], timeout=10) as smtp:
             smtp.login(MAIL_CONFIG["username"], MAIL_CONFIG["password"])
             smtp.send_message(msg)
+        print("Email notification sent.")
     except Exception as err:
         print(f"Email notification failed: {err}")
 
@@ -124,7 +130,8 @@ def save_response():
                 record,
             )
             new_id = cursor.lastrowid
-        send_notification_email(record)
+
+        threading.Thread(target=send_notification_email, args=(record,), daemon=True).start()
         return jsonify({"ok": True, "id": new_id}), 201
     except pymysql.MySQLError as err:
         return jsonify({"ok": False, "error": str(err)}), 500
@@ -154,4 +161,3 @@ def list_responses():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
-
