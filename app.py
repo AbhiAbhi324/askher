@@ -1,9 +1,9 @@
+import json
 import os
-import smtplib
-import socket
 import threading
+import urllib.error
+import urllib.request
 from datetime import datetime
-from email.message import EmailMessage
 
 import pymysql
 import pymysql.cursors
@@ -13,7 +13,6 @@ from zoneinfo import ZoneInfo
 app = Flask(__name__)
 
 ist_tz = ZoneInfo("Asia/Kolkata")
-
 
 DB_PORT = int(os.environ.get("DB_PORT", 3306))
 
@@ -27,29 +26,9 @@ DB_CONFIG = {
     "autocommit": True,
 }
 
-MAIL_CONFIG = {
-    "server": os.environ.get("MAIL_SERVER", "smtp.gmail.com"),
-    "port": int(os.environ.get("MAIL_PORT", "465")),
-    "username": os.environ.get("MAIL_USERNAME", ""),
-    "password": os.environ.get("MAIL_PASSWORD", ""),
-}
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+RESEND_FROM = os.environ.get("RESEND_FROM", "onboarding@resend.dev")
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "abhiabhi4a@gmail.com")
-
-
-class SMTP_SSL_IPv4(smtplib.SMTP_SSL):
-    """Some hosts (e.g. Render) can't route outbound IPv6, but smtplib's
-    default connection logic may try an IPv6 address for smtp.gmail.com
-    and fail with 'Network is unreachable'. This forces IPv4 while still
-    validating the TLS certificate against the real hostname."""
-
-    def _get_socket(self, host, port, timeout):
-        addr_info = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
-        family, socktype, proto, _, sockaddr = addr_info[0]
-        sock = socket.socket(family, socktype, proto)
-        if timeout is not None:
-            sock.settimeout(timeout)
-        sock.connect(sockaddr)
-        return self.context.wrap_socket(sock, server_hostname=self._host)
 
 
 def get_connection():
@@ -85,10 +64,11 @@ except Exception as e:
 
 
 def send_notification_email(record):
-    """Email NOTIFY_EMAIL whenever a new response comes in.
-    Failures here are logged but never break the save/response flow."""
-    if not MAIL_CONFIG["username"] or not MAIL_CONFIG["password"]:
-        print("Email notification skipped: MAIL_USERNAME/MAIL_PASSWORD not set.")
+    """Email NOTIFY_EMAIL whenever a new response comes in, via Resend's
+    HTTPS API. Failures here are logged but never break the save/response
+    flow."""
+    if not RESEND_API_KEY:
+        print("Email notification skipped: RESEND_API_KEY not set.")
         return
 
     when = record["saved_at"].strftime("%Y-%m-%d %H:%M %Z")
@@ -101,19 +81,30 @@ def send_notification_email(record):
         f"Saved at: {when}\n"
     )
 
-    msg = EmailMessage()
-    msg["Subject"] = "New response on your page 💌"
-    msg["From"] = MAIL_CONFIG["username"]
-    msg["To"] = NOTIFY_EMAIL
-    msg.set_content(body)
+    payload = json.dumps({
+        "from": RESEND_FROM,
+        "to": [NOTIFY_EMAIL],
+        "subject": "New response on your page 💌",
+        "text": body,
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Content-Type": "application/json",
+        },
+    )
 
     try:
-
-        with SMTP_SSL_IPv4(MAIL_CONFIG["server"], MAIL_CONFIG["port"], timeout=10) as smtp:
-            smtp.login(MAIL_CONFIG["username"], MAIL_CONFIG["password"])
-            smtp.send_message(msg)
-        print("Email notification sent.")
-    except Exception as err: 
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            print(f"Email notification sent. (HTTP {resp.status})")
+    except urllib.error.HTTPError as err:
+        detail = err.read().decode("utf-8", errors="ignore")
+        print(f"Email notification failed: HTTP {err.code} — {detail}")
+    except Exception as err:  # noqa: BLE001 - never let email break the request
         print(f"Email notification failed: {err}")
 
 
