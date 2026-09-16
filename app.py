@@ -56,6 +56,7 @@ def init_db():
     finally:
         conn.close()
 
+
 try:
     init_db()
     print("Database successfully initialized or already exists.")
@@ -95,6 +96,10 @@ def send_notification_email(record):
         headers={
             "Authorization": f"Bearer {RESEND_API_KEY}",
             "Content-Type": "application/json",
+            # Cloudflare (which fronts Resend's API) blocks requests with
+            # the default Python-urllib User-Agent as bot traffic (error
+            # code 1010). A normal-looking UA avoids that.
+            "User-Agent": "Mozilla/5.0 (compatible; askher-app/1.0)",
         },
     )
 
@@ -104,7 +109,7 @@ def send_notification_email(record):
     except urllib.error.HTTPError as err:
         detail = err.read().decode("utf-8", errors="ignore")
         print(f"Email notification failed: HTTP {err.code} — {detail}")
-    except Exception as err:  # noqa: BLE001 - never let email break the request
+    except Exception as err: 
         print(f"Email notification failed: {err}")
 
 
