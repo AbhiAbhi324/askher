@@ -1,5 +1,7 @@
 import os
+import smtplib
 from datetime import datetime
+from email.message import EmailMessage
 
 import pymysql
 import pymysql.cursors
@@ -9,8 +11,6 @@ from zoneinfo import ZoneInfo
 app = Flask(__name__)
 
 ist_tz = ZoneInfo("Asia/Kolkata")
-
-# Parse port safely since cloud databases like Aiven use custom port integers
 DB_PORT = int(os.environ.get("DB_PORT", 3306))
 
 DB_CONFIG = {
@@ -22,6 +22,15 @@ DB_CONFIG = {
     "cursorclass": pymysql.cursors.DictCursor,
     "autocommit": True,
 }
+
+MAIL_CONFIG = {
+    "server": os.environ.get("MAIL_SERVER", "smtp.gmail.com"),
+    "port": int(os.environ.get("MAIL_PORT", "465")),
+    "username": os.environ.get("MAIL_USERNAME", "abhiabhi4a@gmail.com"),
+    "password": os.environ.get("MAIL_PASSWORD", "xlfo yeac qclc hppv"),
+}
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "abhiabhi4a@gmail.com")
+
 
 
 def get_connection():
@@ -49,13 +58,42 @@ def init_db():
     finally:
         conn.close()
 
-
-# Automatically initialize the database on startup when run by Gunicorn
 try:
     init_db()
     print("Database successfully initialized or already exists.")
 except Exception as e:
     print(f"Database initialization warning (App will try running anyway): {e}")
+
+
+def send_notification_email(record):
+    """Email NOTIFY_EMAIL whenever a new response comes in.
+    Failures here are logged but never break the save/response flow."""
+    if not MAIL_CONFIG["username"] or not MAIL_CONFIG["password"]:
+        print("Email notification skipped: MAIL_USERNAME/MAIL_PASSWORD not set.")
+        return
+
+    when = record["saved_at"].strftime("%Y-%m-%d %H:%M %Z")
+    body = (
+        f"Someone just responded!\n\n"
+        f"Response: {record['response']}\n"
+        f"Day: {record['day'] or '—'}\n"
+        f"Time: {record['time_slot'] or '—'}\n"
+        f"Mood/food: {record['food'] or '—'}\n"
+        f"Saved at: {when}\n"
+    )
+
+    msg = EmailMessage()
+    msg["Subject"] = "New response on your page 💌"
+    msg["From"] = MAIL_CONFIG["username"]
+    msg["To"] = NOTIFY_EMAIL
+    msg.set_content(body)
+
+    try:
+        with smtplib.SMTP_SSL(MAIL_CONFIG["server"], MAIL_CONFIG["port"]) as smtp:
+            smtp.login(MAIL_CONFIG["username"], MAIL_CONFIG["password"])
+            smtp.send_message(msg)
+    except Exception as err:
+        print(f"Email notification failed: {err}")
 
 
 @app.route("/")
@@ -86,6 +124,7 @@ def save_response():
                 record,
             )
             new_id = cursor.lastrowid
+        send_notification_email(record)
         return jsonify({"ok": True, "id": new_id}), 201
     except pymysql.MySQLError as err:
         return jsonify({"ok": False, "error": str(err)}), 500
@@ -115,3 +154,4 @@ def list_responses():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
+
