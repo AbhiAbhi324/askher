@@ -1,5 +1,6 @@
 import os
 import smtplib
+import socket
 import threading
 from datetime import datetime
 from email.message import EmailMessage
@@ -26,14 +27,29 @@ DB_CONFIG = {
     "autocommit": True,
 }
 
-
 MAIL_CONFIG = {
     "server": os.environ.get("MAIL_SERVER", "smtp.gmail.com"),
     "port": int(os.environ.get("MAIL_PORT", "465")),
-    "username": os.environ.get("MAIL_USERNAME", "abhiabhi4a@gmail.com"),
-    "password": os.environ.get("MAIL_PASSWORD", "xlfo yeac qclc hppv"),
+    "username": os.environ.get("MAIL_USERNAME", ""),
+    "password": os.environ.get("MAIL_PASSWORD", ""),
 }
 NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "abhiabhi4a@gmail.com")
+
+
+class SMTP_SSL_IPv4(smtplib.SMTP_SSL):
+    """Some hosts (e.g. Render) can't route outbound IPv6, but smtplib's
+    default connection logic may try an IPv6 address for smtp.gmail.com
+    and fail with 'Network is unreachable'. This forces IPv4 while still
+    validating the TLS certificate against the real hostname."""
+
+    def _get_socket(self, host, port, timeout):
+        addr_info = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        family, socktype, proto, _, sockaddr = addr_info[0]
+        sock = socket.socket(family, socktype, proto)
+        if timeout is not None:
+            sock.settimeout(timeout)
+        sock.connect(sockaddr)
+        return self.context.wrap_socket(sock, server_hostname=self._host)
 
 
 def get_connection():
@@ -60,7 +76,6 @@ def init_db():
             )
     finally:
         conn.close()
-
 
 try:
     init_db()
@@ -94,11 +109,11 @@ def send_notification_email(record):
 
     try:
 
-        with smtplib.SMTP_SSL(MAIL_CONFIG["server"], MAIL_CONFIG["port"], timeout=10) as smtp:
+        with SMTP_SSL_IPv4(MAIL_CONFIG["server"], MAIL_CONFIG["port"], timeout=10) as smtp:
             smtp.login(MAIL_CONFIG["username"], MAIL_CONFIG["password"])
             smtp.send_message(msg)
         print("Email notification sent.")
-    except Exception as err:
+    except Exception as err: 
         print(f"Email notification failed: {err}")
 
 
