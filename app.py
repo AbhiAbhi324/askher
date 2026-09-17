@@ -46,9 +46,10 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS responses (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     response VARCHAR(10) NOT NULL,
-                    day VARCHAR(20),
-                    time_slot VARCHAR(50),
+                    day ENUM('Today', 'Tomorrow', 'Some other day'),
+                    time_slot ENUM('9pm & late night', '5pm - 9pm', '3 - 5 (I am busy)'),
                     food VARCHAR(50),
+                    shared_message TEXT,
                     saved_at DATETIME NOT NULL
                 )
                 """
@@ -127,6 +128,7 @@ def save_response():
         "day": data.get("day"),
         "time_slot": data.get("time"),
         "food": data.get("food"),
+        "shared_message": data.get("message"),
         "saved_at": datetime.now(ist_tz),
     }
 
@@ -135,8 +137,8 @@ def save_response():
         with conn.cursor() as cursor:
             cursor.execute(
                 """
-                INSERT INTO responses (response, day, time_slot, food, saved_at)
-                VALUES (%(response)s, %(day)s, %(time_slot)s, %(food)s, %(saved_at)s)
+                INSERT INTO responses (response, day, time_slot, food, shared_message, saved_at)
+                VALUES (%(response)s, %(day)s, %(time_slot)s, %(food)s, %(shared_message)s, %(saved_at)s)
                 """,
                 record,
             )
@@ -156,7 +158,7 @@ def list_responses():
     try:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT id, response, day, time_slot, food, saved_at "
+                "SELECT id, response, day, time_slot, food, shared_message, saved_at "
                 "FROM responses ORDER BY saved_at DESC"
             )
             rows = cursor.fetchall()

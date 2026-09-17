@@ -203,6 +203,34 @@ h2{
   border-color: var(--hot-pink);
 }
 
+/* Screen 2 choice options (Pick a Day / What Time) — matches the
+   selectable-box style from the sketch instead of native date/select inputs */
+.choice-list{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.choice-option{
+  border: 1.5px solid #d2e4d8;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #fffdfc;
+  cursor:pointer;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--maroon);
+  font-weight: 600;
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  user-select:none;
+}
+.choice-option:hover{ transform: translateY(-1px); }
+.choice-option.selected{
+  border-color: var(--hot-pink);
+  background: #eef7f1;
+}
+
 .primary-btn{
   width: 100%;
   box-sizing: border-box;
@@ -371,20 +399,21 @@ h2{
     <h2>So... when are you free?</h2>
     <div class="field">
       <label>Pick a Day 📅</label>
-      <input type="date" id="dateInput">
+      <div class="choice-list" id="dayChoices">
+        <div class="choice-option" data-day="Today">Today</div>
+        <div class="choice-option" data-day="Tomorrow">Tomorrow</div>
+        <div class="choice-option" data-day="Some other day">some other day</div>
+      </div>
     </div>
     <div class="field">
       <label>What Time? 🕰️</label>
-      <select id="timeInput">
-        <option value="" disabled selected>Select a time...</option>
-        <option>Morning (9 – 11am)</option>
-        <option>Lunch (12 – 2pm)</option>
-        <option>Afternoon (3 – 5pm)</option>
-        <option>Evening (6 – 8pm)</option>
-        <option>Late night (9pm+)</option>
-      </select>
+      <div class="choice-list" id="timeChoices">
+        <div class="choice-option" data-time="9pm & late night">9pm &amp; late night</div>
+        <div class="choice-option" data-time="5pm - 9pm">5pm - 9pm</div>
+        <div class="choice-option" data-time="3 - 5 (I am busy)">3 - 5 (I am busy)</div>
+      </div>
     </div>
-    <button class="primary-btn" id="setDateBtn">set the date! ♥</button>
+    <button class="primary-btn" id="setDateBtn" disabled>set the date! ♥</button>
   </div>
 
   <!-- Screen 3: Vibe picker -->
@@ -402,6 +431,17 @@ h2{
     <button class="primary-btn" id="confirmFoodBtn" disabled>lock it in ♥</button>
   </div>
 
+  <!-- Screen 3b: Share something -->
+  <div class="card" id="screenShare">
+    <h2 style="margin-bottom:20px;">Share something 😁</h2>
+    <div class="field">
+      <label>type here:-</label>
+      <input type="text" id="shareInput" placeholder="say anything...">
+    </div>
+    <div class="heart-row">♥ ♥ ♥ ♥</div>
+    <button class="primary-btn" id="shareOkBtn">okay</button>
+  </div>
+
   <!-- Screen 4: Final -->
   <div class="card" id="screen4">
     <p class="final-msg" id="finalMsg">glad you shared how you feel. be kind to yourself today 🌸😁</p>
@@ -413,7 +453,6 @@ h2{
 
 </div>
 
-<!-- Background music: put song.mp3 in your static/ folder -->
 <audio id="bgMusic" loop preload="auto">
   <source src="{{ url_for('static', filename='bm.mp3') }}" type="audio/mpeg">
 </audio>
@@ -458,7 +497,7 @@ h2{
   const toggleBtn = document.getElementById('musicToggle');
 
   if (music && toggleBtn) {
-    music.volume = 0.4; // Soft background volume
+    music.volume = 0.4; 
 
     function autoPlayMusic(){
       music.play().then(() => {
@@ -471,12 +510,10 @@ h2{
       });
     }
 
-    // Start playback on the first click, tap, or mouse movement
     window.addEventListener('click', autoPlayMusic);
     window.addEventListener('touchstart', autoPlayMusic);
     window.addEventListener('mousemove', autoPlayMusic);
 
-    // Manual toggle button
     toggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (music.paused) {
@@ -489,7 +526,6 @@ h2{
     });
   }
 
-  // ---------- Screen 1: runaway "no" button ----------
   const noBtn = document.getElementById('noBtn');
   const yesBtn1 = document.getElementById('yesBtn1');
   let noIsFixed = false;
@@ -522,18 +558,36 @@ h2{
 
   yesBtn1.addEventListener('click', ()=> goTo('screen2'));
 
-  // ---------- Screen 2: scheduling ----------
-  const dateInput = document.getElementById('dateInput');
-  const timeInput = document.getElementById('timeInput');
+  const dayChoices = document.querySelectorAll('#dayChoices .choice-option');
+  const timeChoices = document.querySelectorAll('#timeChoices .choice-option');
   const setDateBtn = document.getElementById('setDateBtn');
   const finalMsg = document.getElementById('finalMsg');
-  let chosenTime = '10';
+  let chosenDay = null;
+  let chosenTime = null;
+
+  function updateSetDateBtn(){
+    setDateBtn.disabled = !(chosenDay && chosenTime);
+  }
+
+  dayChoices.forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      dayChoices.forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      chosenDay = opt.dataset.day;
+      updateSetDateBtn();
+    });
+  });
+
+  timeChoices.forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      timeChoices.forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      chosenTime = opt.dataset.time;
+      updateSetDateBtn();
+    });
+  });
 
   setDateBtn.addEventListener('click', ()=>{
-    if(timeInput.value){
-      const match = timeInput.value.match(/(\d+)/);
-      if(match) chosenTime = match[1];
-    }
     goTo('screen3');
   });
 
@@ -552,20 +606,30 @@ h2{
   });
 
   confirmFoodBtn.addEventListener('click', ()=>{
+    goTo('screenShare');
+  });
+
+  // ---------- Screen 3b: share something ----------
+  const shareInput = document.getElementById('shareInput');
+  const shareOkBtn = document.getElementById('shareOkBtn');
+  let sharedMessage = null;
+
+  shareOkBtn.addEventListener('click', ()=>{
+    sharedMessage = shareInput.value.trim() || null;
     finalMsg.textContent = `glad you shared that you're feeling ${chosenFood.toLowerCase()}. talk soon, around ${chosenTime} 🌸😁`;
     goTo('screen4');
     spawnHearts();
   });
 
-  // ---------- database (Flask + MySQL API) ----------
   const saveStatus = document.getElementById('saveStatus');
 
   async function saveResponse(){
     const record = {
       response: 'yes',
-      day: dateInput.value || null,
-      time: timeInput.value || null,
-      food: chosenFood || null
+      day: chosenDay || null,
+      time: chosenTime || null,
+      food: chosenFood || null,
+      message: sharedMessage || null
     };
     try{
       saveStatus.textContent = 'saving...';
@@ -586,6 +650,12 @@ h2{
     }
   }
 
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
   async function loadResponses(){
     const listEl = document.getElementById('responsesList');
     listEl.innerHTML = '<p class="modal-empty">loading...</p>';
@@ -603,6 +673,7 @@ h2{
           <div><strong>${r.response === 'yes' ? '💕 said yes' : r.response}</strong></div>
           <div>Day: ${r.day || '—'} · Time: ${r.time_slot || '—'}</div>
           <div>Mood: ${r.food || '—'}</div>
+          <div>Message: ${r.shared_message ? escapeHtml(r.shared_message) : '—'}</div>
           <div class="meta">${when}</div>
         </div>`;
       }).join('');
@@ -623,7 +694,6 @@ h2{
     if(e.target.id === 'modalOverlay') e.target.classList.remove('open');
   });
 
-  // ---------- Screen 4: floating hearts + accept ----------
   function spawnHearts(){
     const interval = setInterval(()=>{
       const h = document.createElement('div');
